@@ -1,0 +1,26 @@
+services:
+  cars:
+    image: "revayne/ryd-cars" #TODO: create image
+    container_name: ryd-cars
+    ports:
+      - "8200:8200"
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    networks:
+      - ryd
+  users:
+    image: "revayne/ryd-users" #TODO: create image
+    container_name: ryd-users
+    ports:
+      - "8100:8100"
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    networks:
+      - ryd
+networks:
+  ryd:
+    driver: "bridge"
