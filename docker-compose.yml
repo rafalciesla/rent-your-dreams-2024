@@ -1,20 +1,126 @@
 services:
-  cars:
-    image: "revayne/ryd-cars" #TODO: create image
-    container_name: ryd-cars
+  postgres:
+    image: postgres:17.1
+    container_name: postgres
+    restart: always
     ports:
-      - "8200:8200"
+      - "5432:5432"
+    environment:
+      PGUSER: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 5432
+      POSTGRES_DB: rent_your_dreams
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - ryd
+
+  configserver:
+    image: "rafalciesla/ryd-configserver:latest"
+    container_name: configserver
+    ports:
+      - "8071:8071"
+    healthcheck:
+      test: "wget -T5 -qO- localhost:8071/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     deploy:
       resources:
         limits:
           memory: 700m
     networks:
       - ryd
+
+  eurekaserver:
+    image: "rafalciesla/ryd-eurekaserver:latest"
+    container_name: eurekaserver
+    ports:
+      - "8070:8070"
+    healthcheck:
+      test: "wget -T5 -qO- localhost:8070/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    networks:
+      - ryd
+
   users:
-    image: "revayne/ryd-users" #TODO: create image
+    image: "rafalciesla/ryd-users:latest"
     container_name: ryd-users
     ports:
-      - "8100:8100"
+      - "8101:8101"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/rent_your_dreams"
+      SPRING_CONFIG_HOST: "http://configserver:8071/"
+      SPRING_PROFILES_ACTIVE: "dev"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka"
+    depends_on:
+      configserver:
+        condition: service_healthy
+      eurekaserver:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    networks:
+      - ryd
+
+  cars:
+    image: "rafalciesla/ryd-cars:latest"
+    container_name: ryd-cars
+    ports:
+      - "8102:8102"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/rent_your_dreams"
+      SPRING_CONFIG_HOST: "http://configserver:8071/"
+      SPRING_PROFILES_ACTIVE: "dev"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka"
+    depends_on:
+      configserver:
+        condition: service_healthy
+      eurekaserver:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    networks:
+      - ryd
+
+  images:
+    image: "rafalciesla/ryd-images:latest"
+    container_name: ryd-images
+    ports:
+      - "8103:8103"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/rent_your_dreams"
+      SPRING_CONFIG_HOST: "http://configserver:8071/"
+      SPRING_PROFILES_ACTIVE: "dev"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka"
+    depends_on:
+      configserver:
+        condition: service_healthy
+      eurekaserver:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -24,3 +130,7 @@ services:
 networks:
   ryd:
     driver: "bridge"
+
+volumes:
+  pgdata:
+    external: false

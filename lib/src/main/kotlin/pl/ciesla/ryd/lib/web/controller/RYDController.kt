@@ -3,13 +3,12 @@ package pl.ciesla.ryd.lib.web.controller
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import pl.ciesla.ryd.lib.mapper.RYDMapper
 import pl.ciesla.ryd.lib.model.RYDEntity
 import pl.ciesla.ryd.lib.service.RYDService
 import pl.ciesla.ryd.lib.web.dto.RYDDTO
 
-abstract class RYDController<ENTITY : RYDEntity, DTO : RYDDTO>(
-    protected val service: RYDService<ENTITY, DTO>
+abstract class RYDController<ENTITY : RYDEntity, DTO : RYDDTO, SERVICE : RYDService<ENTITY, DTO>>(
+    protected val service: SERVICE
 ) {
 
     @GetMapping

@@ -1,0 +1,127 @@
+# TODO:
+# General:
+# - validation
+# - security
+# - servers
+#
+# Endpoints:
+# - Reusable responses
+# - Cars browser [in car browser file]
+# - Rent request (by user) [in rent file]
+# - Rent a car to user (by admin) [in rent file]
+# - Reclaim a car from user (by admin) [in rent file]
+
+openapi: 3.1.1
+info:
+  title: Cars
+  description: |
+    ### Cars CRUD api
+  contact:
+    name: API Support Team
+    email: support@example.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: 'https://example.com/v1'    # an url to the target host
+    description: Production server   # optional string describing the host
+paths:
+  /api/v1/cars:
+    get:
+      summary: List all cars
+      description: Returns the list of all cars from database
+      tags:
+        - Cars
+      parameters:
+        - name: brand
+          in: query
+          schema:
+            type: string
+            example: "Chevrolet"
+        - name: model
+          in: query
+          schema:
+            type: string
+            example: "Corvette"
+      responses:
+        200:
+          description: List of cars
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cars:
+                    type: array
+                    items:
+                      $ref: "model.yaml#/components/schemas/Car"
+
+    post:
+      summary: Create a new car
+      description: Creates a new car
+      tags:
+        - Cars
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "model.yaml#/components/schemas/Car"
+      responses:
+        201:
+          description: Created car
+          content:
+            application/json:
+              schema:
+                schema:
+                  $ref: "model.yaml#/components/schemas/Car"
+
+  /api/v1/cars/{id}:
+    get:
+      summary: Get car by ID
+      description: Returns car with given id if exists in DB
+      tags:
+        - Cars
+      parameters:
+        - $ref: "model.yaml#/components/parameters/CarIdParam"
+      responses:
+        200:
+          description: Car by id
+          content:
+            application/json:
+              schema:
+                $ref: "model.yaml#/components/schemas/Car"
+        404:
+          $ref: "responses.yaml#/components/responses/404"
+    put:
+      summary: Edit car by ID
+      description: Edits the whole car object based on request body
+      tags:
+        - Cars
+      parameters:
+        - $ref: "model.yaml#/components/parameters/CarIdParam"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "model.yaml#/components/schemas/Car"
+      responses:
+        200:
+          description: Car updated successfully
+          content:
+            application/json:
+              schema:
+                schema:
+                  $ref: "model.yaml#/components/schemas/Car"
+        404:
+          $ref: "responses.yaml#/components/responses/404"
+    delete:
+      summary: Delete car by ID
+      description: Deletes a car by ID
+      tags:
+        - Cars
+      parameters:
+        - $ref: "model.yaml#/components/parameters/CarIdParam"
+      responses:
+        204:
+          description: Car deleted successfully

@@ -1,14 +1,53 @@
 server:
   port: 8102
+
 spring:
   application:
     name: cars
-  h2:
-    console:
-      enabled: true
-      path: /h2
+  profiles:
+    active: local
   datasource:
-    url: jdbc:h2:mem:cars
-    username: sa
-    password: 1234
-    driverClassName: org.h2.Driver
+    url: jdbc:postgresql://localhost:5432/rent_your_dreams
+    username: postgres
+    password: 5432
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: cars
+  flyway:
+    create-schemas: true
+    schemas: cars
+    baseline-on-migrate: true
+  config:
+    host: "http://localhost:8071/"
+    import: "configserver:${spring.config.host}"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    shutdown:
+      enabled: true # an actuator url allowing to shut down service gracefully and deregister itself from eureka
+  info:
+    env:
+      enabled: true # enable environment info
+
+endpoints:
+  shutdown:
+    enabled: true
+
+eureka:
+  instance:
+    prefer-ip-address: true  # when no DNS mapping is set up set this to true
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8070/eureka

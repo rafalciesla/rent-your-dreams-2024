@@ -1,28 +1,36 @@
 package pl.ciesla.ryd.cars.model
 
 import jakarta.persistence.*
-import lombok.Data
-import lombok.EqualsAndHashCode
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import pl.ciesla.ryd.lib.common.cars.EngineType
+import pl.ciesla.ryd.lib.common.cars.TransmissionType
 import pl.ciesla.ryd.lib.model.RYDEntity
 import java.math.BigDecimal
 
-@Entity
 @Table(name = "cars")
-@Data
 @EntityListeners(AuditingEntityListener::class)
-@EqualsAndHashCode(callSuper = true)
+@Entity
 class Car(
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "cars_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cars_seq")
     @SequenceGenerator(name = "cars_seq", initialValue = 100, allocationSize = 1)
     var id: Long? = null,
+    @Enumerated(EnumType.STRING)
+    var engineType: EngineType,
+    @Enumerated(EnumType.STRING)
+    var transmissionType: TransmissionType,
     var brand: String,
     var model: String,
     var yearOfManufacture: Int,
-    var engineType: String,
+    var engineLayout: String,
     var engineCapacity: Int,
-    var price: BigDecimal
+    var horsePower: Int,
+    var timeTo100: Double,
+    var color: String,
+    var numberOfDoors: Int,
+    var numberOfSeats: Int,
+    var pricePerDay: BigDecimal,
+    var description: String,
 
-): RYDEntity()
+    ) : RYDEntity()

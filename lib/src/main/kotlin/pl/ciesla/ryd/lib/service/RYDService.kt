@@ -15,12 +15,12 @@ abstract class RYDService<ENTITY : RYDEntity, DTO : RYDDTO>(
     fun findAll(): List<DTO> = mapper.entityToDTOList(repository.findAll())
 
     fun getById(id: Long): DTO {
-        var entity = repository.findByIdOrNull(id) ?: throw EntityNotFoundException()
+        val entity = repository.findByIdOrNull(id) ?: throw EntityNotFoundException()
         return mapper.entityToDTO(entity)
     }
 
     fun create(dto: DTO): DTO {
-        var entity = repository.save(mapper.dtoToEntity(dto))
+        val entity = repository.save(mapper.dtoToEntity(dto))
         return mapper.entityToDTO(entity)
     }
 
@@ -29,7 +29,7 @@ abstract class RYDService<ENTITY : RYDEntity, DTO : RYDDTO>(
             throw EntityNotFoundException()
         }
         dto.id = id
-        var entity = repository.save(mapper.dtoToEntity(dto))
+        val entity = repository.save(mapper.dtoToEntity(dto))
         return mapper.entityToDTO(entity)
     }
 

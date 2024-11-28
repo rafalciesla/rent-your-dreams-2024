@@ -5,5 +5,7 @@ rootProject.name = "rent-your-dreams-2024-backend"
 
 include("lib")
 include("configserver")
-include("cars")
+include("eurekaserver")
 include("users")
+include("cars")
+include("images")

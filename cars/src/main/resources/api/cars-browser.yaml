@@ -1,0 +1,100 @@
+# TODO:
+# General:
+# - validation
+# - security
+# - servers
+
+openapi: 3.1.1
+info:
+  title: Cars browser
+  description: |
+    ### Cars browser api
+  contact:
+    name: API Support Team
+    email: support@example.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: 'https://example.com/v1'    # an url to the target host
+    description: Production server   # optional string describing the host
+paths:
+  /api/v1/cars/browser:
+    post:
+      summary: Create a new car
+      description: Creates a new car
+      tags:
+        - Cars Browser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "model.yaml#/components/schemas/Car"
+      responses:
+        201:
+          description: Created car
+          content:
+            application/json:
+              schema:
+                $ref: "model.yaml#/components/schemas/Car"
+
+components:
+  schemas:
+    BrowserRequest:
+      type: object
+      properties:
+        filters:
+          type: object
+          properties:
+            brand:
+              type: string
+            model:
+              type: string
+            yearOfManufacture:
+              type: integer
+            engineLayout:
+              type: string
+            engineCapacity:
+              type: integer
+            engineType:
+              type: string
+            transmissionType:
+              type: string
+            horsePower:
+              type: integer
+            timeTo100:
+              type: numeric
+            color:
+              type: string
+            numberOfDoors:
+              type: integer
+            numberOfSeats:
+              type: integer
+            pricePerDay:
+              type: numeric
+        pagination:
+          schema:
+            $ref: "#/components/schemas/Pagination"
+        sort:
+          type: array
+          schema:
+            $ref: "#/components/schemas/Sort"
+
+    Pagination:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+
+    Sort:
+      type: object
+      properties:
+        name:
+          type: string
+        index:
+          type: integer
+        asc:
+          type: boolean

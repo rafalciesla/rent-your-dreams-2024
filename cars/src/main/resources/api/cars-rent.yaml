@@ -1,0 +1,94 @@
+# TODO:
+# General:
+# - validation
+# - security
+# - servers
+# - enums
+
+openapi: 3.1.1
+info:
+  title: Cars - Rent api
+  description: |
+    ### API for cars rent requests and retrieval
+  contact:
+    name: API Support Team
+    email: support@example.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: 'https://example.com/v1'    # an url to the target host
+    description: Production server   # optional string describing the host
+paths:
+  /api/v1/cars/rent/requests:
+    post:
+      summary: Request rent
+      description: Creates a car rental request
+      tags:
+        - Requests
+      parameters:
+        - $ref: "model.yaml#/components/parameters/CarIdParam"
+      responses:
+        204:
+          description: Created a car rental request
+    get:
+      summary: Get rent requests
+      description: Lists rental requests
+      tags:
+        - Requests
+      parameters:
+        - name: requestId
+          in: query
+          schema:
+            type: integer
+            example: 200
+        - name: userId
+          in: query
+          schema:
+            type: integer
+            example: 200
+    patch:
+      summary: Change request status
+      description: Changes a status of a request
+      tags:
+        - Requests
+      parameters:
+        - name: requestId
+          in: query
+          schema:
+            type: integer
+            example: 200
+        - name: status
+          in: query
+          schema:
+            type: string
+            example: "CANCELED"
+  /api/v1/cars/rent:
+    post:
+      summary: Rent a car to a user
+      description: Accepts rent request and creates a car rental
+      tags:
+        - Rent
+      parameters:
+        - name: requestId
+          in: query
+          schema:
+            type: integer
+            example: 200
+    patch:
+      summary: Change rent status
+      description: Changes a status of a car rental
+      tags:
+        - Rent
+      parameters:
+        - name: rentalId
+          in: query
+          schema:
+            type: integer
+            example: 200
+        - name: status
+          in: query
+          schema:
+            type: string
+            example: "CANCELED"

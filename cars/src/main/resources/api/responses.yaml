@@ -1,0 +1,21 @@
+openapi: 3.1.0
+info:
+  title: Responses
+  description: Title
+  version: 1.0.0
+paths: { }
+components:
+  responses:
+    404:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errorType:
+                type: string
+                example: "NOT_FOUND"
+              message:
+                type: string
+                example: "Entity not found"

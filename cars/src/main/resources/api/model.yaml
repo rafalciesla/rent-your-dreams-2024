@@ -1,0 +1,86 @@
+openapi: 3.1.0
+info:
+  title: Model
+  description: Model
+  version: 1.0.0
+paths: { }
+
+components:
+  schemas:
+    Car:
+      type: object
+      properties:
+        id:
+          type: integer
+          examples:
+            - 100
+        brand:
+          type: string
+          examples:
+            - "Chevrolet"
+        model:
+          type: string
+          examples:
+            - "Corvette"
+        yearOfManufacture:
+          type: integer
+          examples:
+            - 2015
+        engineLayout:
+          type: string
+          examples:
+            - "V8"
+        engineCapacity:
+          type: integer
+          examples:
+            - 6200
+        engineType:
+          type: string
+          examples:
+            - "PETROL"
+        transmissionType:
+          type: string
+          examples:
+            - "Automatic"
+        horsePower:
+          type: integer
+          examples:
+            - 482
+        timeTo100:
+          type: number
+          examples:
+            - 3.8
+        color:
+          type: string
+          examples:
+            - "Red"
+        numberOfDoors:
+          type: integer
+          examples:
+            - 2
+        numberOfSeats:
+          type: integer
+          examples:
+            - 2
+        pricePerDay:
+          type: number
+          examples:
+            - 2000.00
+        description:
+          type: string
+          examples:
+            - |
+              "The Chevrolet Corvette C7 is a powerful and stylish sports car, perfect for those who crave speed and performance. 
+              With its sleek, aerodynamic design, the C7 combines a robust 6.2L V8 engine and advanced handling features, delivering an exhilarating driving experience. 
+              This iconic American sports car offers a luxurious yet driver-focused interior with premium materials, modern tech, and a comfortable cockpit feel. 
+              Ideal for both scenic cruises and dynamic drives, the Corvette C7 brings excitement and sophistication to every journey. 
+              Rent the Corvette C7 to enjoy a blend of power, precision, and unmistakable style."
+
+  parameters:
+    CarIdParam:
+      name: carId
+      in: path
+      required: true
+      schema:
+        type: integer
+        example: 205

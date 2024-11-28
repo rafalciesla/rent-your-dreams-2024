@@ -23,5 +23,5 @@ import org.springframework.context.annotation.Configuration
         )
     )
 )
-class OpenApiConfiguration { //TODO: add more and populate to another microservices
+class OpenApiConfiguration { //TODO: replace with yaml configuration
 }
