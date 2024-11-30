@@ -8,6 +8,6 @@ import pl.ciesla.ryd.lib.web.dto.CarDTO
 @FeignClient("cars")
 interface CarsClient {
 
-    @GetMapping(value = ["/v1/cars"], consumes = ["application/json"])
+    @GetMapping(value = ["/v1"], consumes = ["application/json"]) //TODO: URL MAPPING FROM CONFIG!
     fun getCars(): ResponseEntity<List<CarDTO>>
 }

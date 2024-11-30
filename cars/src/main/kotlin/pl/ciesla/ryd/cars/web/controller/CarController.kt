@@ -8,7 +8,7 @@ import pl.ciesla.ryd.lib.web.controller.RYDController
 import pl.ciesla.ryd.lib.web.dto.CarDTO
 
 @RestController
-@RequestMapping("/v1/cars")
+@RequestMapping("/v1")
 class CarController(
     service: CarService
 ) : RYDController<Car, CarDTO, CarService>(service)

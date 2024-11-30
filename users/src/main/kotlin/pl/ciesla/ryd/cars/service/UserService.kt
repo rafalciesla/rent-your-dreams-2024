@@ -16,6 +16,8 @@ class UserService(
     val carsClient: CarsClient
 ) : RYDService<User, UserDTO>(repository, mapper) {
 
+    //TODO: remove when real logic is implemented.
+    @Deprecated("Just for early testing")
     fun findAllUsersWithCars(): List<UserDTO> {
         return listOf(
             UserDTO(
@@ -24,7 +26,6 @@ class UserService(
                 "test",
                 carsClient.getCars().body!!
             )
-        ) //TODO: remove it! just for testing
+        )
     }
-
 }

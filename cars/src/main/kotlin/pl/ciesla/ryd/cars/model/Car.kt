@@ -33,4 +33,4 @@ class Car(
     var pricePerDay: BigDecimal,
     var description: String,
 
-    ) : RYDEntity()
+) : RYDEntity()

@@ -1,0 +1,53 @@
+server:
+  port: 8072
+
+spring:
+  application:
+    name: gatewayserver
+  profiles:
+    active: local
+  config:
+    host: "http://localhost:8071/"
+    import: "configserver:${spring.config.host}"
+  cloud:
+    gateway:
+      enabled: true
+      discovery:
+        locator:
+          enabled: true
+
+management:
+  health:
+    readinessstate:
+      enabled: true
+    livenessstate:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    gateway:
+      enabled: true
+    health:
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: "http://localhost:8070/eureka"
+
+logging:
+  level:
+    pl:
+      ciesla:
+        ryd:
+          gatewayserver: DEBUG

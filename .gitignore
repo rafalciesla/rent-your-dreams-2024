@@ -48,3 +48,5 @@ bin/
 ### RYD Excluded ###
 TODO.md
 /configserver/src/main/resources/bootstrap.yml
+/docker-private-config.yml
+/java_pid642073.hprof

@@ -1,11 +1,11 @@
-package pl.ciesla.ryd.eurekaserver
+package pl.ciesla.ryd.gatewayserver
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class EurekaserverApplication
+class GatewayserverApplication
 
 fun main(args: Array<String>) {
-    runApplication<EurekaserverApplication>(*args)
+	runApplication<GatewayserverApplication>(*args)
 }

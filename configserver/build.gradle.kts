@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "pl.ciesla"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.2-SNAPSHOT"
 val imagePrefix = "rafalciesla"
 val dockerImageName = "ryd-configserver"
 
@@ -15,10 +15,10 @@ jib {
     from {
         image = "eclipse-temurin:21.0.5_11-jre-alpine"
     }
-    to {
-        image = "${imagePrefix}/${dockerImageName}:${version}"
-        image = "${imagePrefix}/${dockerImageName}:latest"
-    }
+	to {
+		image = "${imagePrefix}/${dockerImageName}"
+		tags = setOf("$version", "latest")
+	}
 }
 
 java {

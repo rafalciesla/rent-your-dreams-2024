@@ -25,6 +25,9 @@ services:
     container_name: configserver
     ports:
       - "8071:8071"
+    extends:
+      file: docker-private-config.yml
+      service: git-authorized
     healthcheck:
       test: "wget -T5 -qO- localhost:8071/actuator/health/readiness | grep UP || exit 1"
       interval: 10s
@@ -56,6 +59,33 @@ services:
     networks:
       - ryd
 
+  gatewayserver:
+    image: "rafalciesla/ryd-gatewayserver:latest"
+    container_name: gatewayserver
+    ports:
+      - "8072:8072"
+    environment:
+      SPRING_CONFIG_HOST: "http://configserver:8071/"
+      SPRING_PROFILES_ACTIVE: "dev"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka"
+    healthcheck:
+      test: "wget -T5 -qO- localhost:8072/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    depends_on:
+      configserver:
+        condition: service_healthy
+      eurekaserver:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    networks:
+      - ryd
+
   users:
     image: "rafalciesla/ryd-users:latest"
     container_name: ryd-users
@@ -72,6 +102,8 @@ services:
       eurekaserver:
         condition: service_healthy
       postgres:
+        condition: service_healthy
+      gatewayserver:
         condition: service_healthy
     deploy:
       resources:
@@ -97,6 +129,8 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      gatewayserver:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -120,6 +154,8 @@ services:
       eurekaserver:
         condition: service_healthy
       postgres:
+        condition: service_healthy
+      gatewayserver:
         condition: service_healthy
     deploy:
       resources:
