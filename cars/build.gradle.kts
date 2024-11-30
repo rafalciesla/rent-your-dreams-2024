@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "pl.ciesla.ryd"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.2-SNAPSHOT"
 val imagePrefix = "rafalciesla"
 val dockerImageName = "ryd-cars"
 
@@ -19,8 +19,8 @@ jib {
         image = "eclipse-temurin:21.0.5_11-jre-alpine"
     }
     to {
-        image = "${imagePrefix}/${dockerImageName}:${version}"
-        image = "${imagePrefix}/${dockerImageName}:latest"
+        image = "${imagePrefix}/${dockerImageName}"
+        tags = setOf("$version", "latest")
     }
 }
 

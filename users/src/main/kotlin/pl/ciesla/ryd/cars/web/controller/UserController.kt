@@ -10,15 +10,16 @@ import pl.ciesla.ryd.lib.web.controller.RYDController
 import pl.ciesla.ryd.lib.web.dto.UserDTO
 
 @RestController
-@RequestMapping("/v1/users")
+@RequestMapping("/v1")
 class UserController(
     service: UserService
 ) : RYDController<User, UserDTO, UserService>(service) {
 
+    //TODO: remove when real logic is implemented.
+    @Deprecated("Just for early testing")
     @GetMapping("/with-cars")
     fun findAllWithCars(): ResponseEntity<List<UserDTO>> {
         val users = service.findAllUsersWithCars() //TODO: remove it! just for testing
         return ResponseEntity.ok().body(users)
     }
-
 }

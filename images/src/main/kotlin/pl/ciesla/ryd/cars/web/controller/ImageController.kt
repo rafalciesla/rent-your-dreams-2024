@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile
 import pl.ciesla.ryd.cars.service.ImageService
 
 @RestController
-@RequestMapping("/api/v1/images")
+@RequestMapping("/v1")
 class ImageController(val imageService: ImageService) {
 
     @PostMapping("/upload")
@@ -30,5 +30,4 @@ class ImageController(val imageService: ImageService) {
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
             .body(InputStreamResource(inputStream))
     }
-
 }

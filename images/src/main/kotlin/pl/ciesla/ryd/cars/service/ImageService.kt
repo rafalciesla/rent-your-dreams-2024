@@ -16,14 +16,6 @@ import java.util.*
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
 
-
-//TODO:
-// - Move to another microservice
-// - Figure out where the files should be saved in production system
-// - Add checksum validation and ignore duplicate files
-// - Generate file names in the system, preserve the original ones
-// - Directory structure for files based on dates
-
 @Service
 class ImageService(
     val imageRepository: ImageRepository
@@ -85,6 +77,4 @@ class ImageService(
             else -> throw StorageException("File does not exist!")
         }
     }
-
-
 }
