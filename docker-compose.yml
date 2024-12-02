@@ -163,6 +163,7 @@ services:
           memory: 700m
     networks:
       - ryd
+
 networks:
   ryd:
     driver: "bridge"
