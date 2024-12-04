@@ -19,8 +19,10 @@ class ResponseTraceFilter(
             chain.filter(exchange).then(Mono.fromRunnable {
                 val requestHeaders = exchange.request.headers
                 val correlationId = filterUtility.getCorrelationId(requestHeaders)
-                logger.debug { "Updated the correlation id to the outbound headers: $correlationId" }
-                exchange.response.headers.add(FilterUtility.CORRELATION_ID, correlationId)
+                if (exchange.response.headers.containsKey(FilterUtility.CORRELATION_ID)) {
+                    logger.debug { "Updated the correlation id to the outbound headers: $correlationId" }
+                    exchange.response.headers.add(FilterUtility.CORRELATION_ID, correlationId)
+                }
             })
         }
     }

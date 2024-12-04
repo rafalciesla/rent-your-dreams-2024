@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import pl.ciesla.ryd.cars.mapper.UserMapper
 import pl.ciesla.ryd.cars.model.User
 import pl.ciesla.ryd.cars.repository.UserRepository
+import pl.ciesla.ryd.cars.service.client.CarsClient
 import pl.ciesla.ryd.lib.service.RYDService
 import pl.ciesla.ryd.lib.web.dto.UserDTO
 
