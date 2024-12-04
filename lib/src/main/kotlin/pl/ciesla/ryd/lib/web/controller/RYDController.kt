@@ -13,28 +13,28 @@ abstract class RYDController<ENTITY : RYDEntity, DTO : RYDDTO, SERVICE : RYDServ
 
     @GetMapping
     fun findAll(): ResponseEntity<List<DTO>> {
-        return ResponseEntity(service.findAll(), HttpStatus.OK)
+        return ResponseEntity.ok(service.findAll())
     }
 
     @GetMapping("/{id}")
     fun get(@PathVariable("id") id: Long): ResponseEntity<DTO> {
         val car = service.getById(id)
-        return ResponseEntity(car, HttpStatus.OK)
+        return ResponseEntity.ok(car)
     }
 
     @PostMapping
     fun create(@RequestBody dto: DTO): ResponseEntity<DTO> {
-        return ResponseEntity(service.create(dto), HttpStatus.CREATED)
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(dto))
     }
 
     @PutMapping("/{id}")
     fun update(@PathVariable("id") id: Long, @RequestBody dto: DTO): ResponseEntity<DTO> {
-        return ResponseEntity(service.update(id, dto), HttpStatus.OK)
+        return ResponseEntity.ok(service.update(id, dto))
     }
 
     @DeleteMapping("/{id}")
-    fun delete(@PathVariable("id") id: Long): ResponseEntity<Any> {
+    fun delete(@PathVariable("id") id: Long): ResponseEntity<Void> {
         service.delete(id)
-        return ResponseEntity(HttpStatus.NO_CONTENT)
+        return ResponseEntity.noContent().build()
     }
 }
