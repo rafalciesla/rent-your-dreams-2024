@@ -19,7 +19,9 @@ class UserController(
     @Deprecated("Just for early testing")
     @GetMapping("/with-cars")
     fun findAllWithCars(): ResponseEntity<List<UserDTO>> {
+        logger.info { "Finding all users with cars START" }
         val users = service.findAllUsersWithCars() //TODO: remove it! just for testing
+        logger.info { "Finding all users with cars START" }
         return ResponseEntity.ok().body(users)
     }
 }

@@ -1,0 +1,30 @@
+services:
+  network-deploy-service:
+    networks:
+      - ryd
+
+  microservice-base:
+    extends:
+      service: network-deploy-service
+    deploy:
+      resources:
+        limits:
+          memory: 800m
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-1.33.5.jar"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      OTEL_METRICS_EXPORTER: none
+
+  microservice-configserver-base:
+    extends:
+      service: microservice-base
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_CONFIG_HOST: http://configserver:8071/
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+
+  microservice-eureka-base:
+    extends:
+      service: microservice-configserver-base
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/

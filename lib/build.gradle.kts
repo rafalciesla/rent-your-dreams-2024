@@ -33,6 +33,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
 
+    // Observability
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
+
     // DB
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 

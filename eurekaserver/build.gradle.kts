@@ -10,6 +10,7 @@ group = "pl.ciesla.ryd"
 version = "0.0.2-SNAPSHOT"
 val imagePrefix = "rafalciesla"
 val dockerImageName = "ryd-eurekaserver"
+val openTelemetryVersion = "1.33.5"
 
 jib {
     from {
@@ -38,12 +39,14 @@ dependencies {
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
-    // Spring Core / Web
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-
     // Spring Cloud
     implementation("org.springframework.cloud:spring-cloud-starter-config")
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-server")
+
+    // Observability
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+    runtimeOnly("io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryVersion}")
 
     // Tests
     testImplementation("org.springframework.boot:spring-boot-starter-test")
