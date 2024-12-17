@@ -1,5 +1,6 @@
 package pl.ciesla.ryd.lib.web.controller
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -11,9 +12,14 @@ abstract class RYDController<ENTITY : RYDEntity, DTO : RYDDTO, SERVICE : RYDServ
     protected val service: SERVICE
 ) {
 
+    val logger = KotlinLogging.logger {}
+
     @GetMapping
     fun findAll(): ResponseEntity<List<DTO>> {
-        return ResponseEntity.ok(service.findAll())
+        logger.info { "Finding all entities START" }
+        val allEntities = service.findAll()
+        logger.info { "Finding all entities END" }
+        return ResponseEntity.ok(allEntities)
     }
 
     @GetMapping("/{id}")

@@ -1,0 +1,407 @@
+services:
+  # ------------------------------
+  # DB
+  # ------------------------------
+  postgres:
+    image: postgres:17.1
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      PGUSER: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 5432
+      POSTGRES_DB: rent_your_dreams
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - ryd
+
+  # ------------------------------
+  # Service Configuration
+  # ------------------------------
+  configserver:
+    image: "rafalciesla/ryd-configserver:latest"
+    container_name: configserver
+    ports:
+      - "8071:8071"
+    extends:
+      file: docker-private-config.yml
+      service: git-authorized
+    healthcheck:
+      test: "wget -T5 -qO- localhost:8071/actuator/health/readiness | grep UP || exit 1"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 7s
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    environment:
+      OTEL_SERVICE_NAME: "configserver"
+      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-1.33.5.jar"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      OTEL_METRICS_EXPORTER: none
+    networks:
+      - ryd
+
+  # ------------------------------
+  # Service Discovery
+  # ------------------------------
+  eurekaserver:
+    image: "rafalciesla/ryd-eurekaserver:latest"
+    container_name: eurekaserver
+    ports:
+      - "8070:8070"
+    healthcheck:
+      test: "wget -T5 -qO- localhost:8070/actuator/health/readiness | grep UP || exit 1"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 7s
+    environment:
+      OTEL_SERVICE_NAME: "eurekaserver"
+    extends:
+      file: common-config.yml
+      service: microservice-configserver-base
+    depends_on:
+      configserver:
+        condition: service_healthy
+
+  # ------------------------------
+  # Resiliency Dependencies
+  # ------------------------------
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks:
+      - ryd
+
+  # ------------------------------
+  # API Gateway
+  # ------------------------------
+  gatewayserver:
+    image: "rafalciesla/ryd-gatewayserver:latest"
+    container_name: gatewayserver
+    ports:
+      - "8072:8072"
+    environment:
+      SPRING_DATA_REDIS_HOST: "redis"
+      OTEL_SERVICE_NAME: "gatewayserver"
+    healthcheck:
+      test: "wget -T5 -qO- localhost:8072/actuator/health/readiness | grep UP || exit 1"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 7s
+    depends_on:
+      configserver:
+        condition: service_healthy
+      eurekaserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: microservice-eureka-base
+
+  # ------------------------------
+  # Observability
+  # ------------------------------
+  read:
+    image: grafana/loki:latest
+    container_name: loki-read
+    command: "-config.file=/etc/loki/config.yaml -target=read"
+    ports:
+      - "3101:3100"
+      - "7946"
+      - "9095"
+    volumes:
+      - ../observability/loki/loki-config.yaml:/etc/loki/config.yaml
+    depends_on:
+      - minio
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks: &loki-dns
+      ryd:
+        aliases:
+          - loki
+
+  write:
+    image: grafana/loki:latest
+    container_name: loki-write
+    command: "-config.file=/etc/loki/config.yaml -target=write"
+    ports:
+      - "3102:3100"
+      - "7946"
+      - "9095"
+    volumes:
+      - ../observability/loki/loki-config.yaml:/etc/loki/config.yaml
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    depends_on:
+      - minio
+    networks:
+      <<: *loki-dns
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    volumes:
+      - ../observability/alloy/alloy-local-config.yaml:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    ports:
+      - "12345:12345"
+    depends_on:
+      - gateway
+    networks:
+      - ryd
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /data/loki-data && \
+        mkdir -p /data/loki-ruler && \
+        minio server /data
+    environment:
+      - MINIO_ROOT_USER=loki
+      - MINIO_ROOT_PASSWORD=supersecret
+      - MINIO_PROMETHEUS_AUTH_TYPE=public
+      - MINIO_UPDATE=off
+    ports:
+      - "9000"
+    volumes:
+      - ./.data/minio:/data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 5s
+      timeout: 20s
+      retries: 10
+      start_period: 5s
+    networks:
+      - ryd
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    command: -config.file /etc/tempo-config.yml
+    ports:
+      - "3110:3100"
+      - "4317:4317"
+    volumes:
+      - ../observability/tempo/tempo.yml:/etc/tempo-config.yml
+    networks:
+      - ryd
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    depends_on:
+      - gateway
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        /run.sh
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../observability/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks:
+      - ryd
+
+  backend:
+    image: grafana/loki:latest
+    container_name: loki-backend
+    volumes:
+      - ../observability/loki/loki-config.yaml:/etc/loki/config.yaml
+    ports:
+      - "3100"
+      - "7946"
+    command: "-config.file=/etc/loki/config.yaml -target=backend -legacy-read-mode=false"
+    depends_on:
+      - gateway
+    networks:
+      - ryd
+
+  gateway:
+    image: nginx:latest
+    container_name: loki-gateway
+    depends_on:
+      - read
+      - write
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        cat <<EOF > /etc/nginx/nginx.conf
+        user  nginx;
+        worker_processes  5;  ## Default: 1
+        
+        events {
+          worker_connections   1000;
+        }
+        
+        http {
+          resolver 127.0.0.11;
+        
+          server {
+            listen             3100;
+        
+            location = / {
+              return 200 'OK';
+              auth_basic off;
+            }
+        
+            location = /api/prom/push {
+              proxy_pass       http://write:3100\$$request_uri;
+            }
+        
+            location = /api/prom/tail {
+              proxy_pass       http://read:3100\$$request_uri;
+              proxy_set_header Upgrade \$$http_upgrade;
+              proxy_set_header Connection "upgrade";
+            }
+        
+            location ~ /api/prom/.* {
+              proxy_pass       http://read:3100\$$request_uri;
+            }
+        
+            location = /loki/api/v1/push {
+              proxy_pass       http://write:3100\$$request_uri;
+            }
+        
+            location = /loki/api/v1/tail {
+              proxy_pass       http://read:3100\$$request_uri;
+              proxy_set_header Upgrade \$$http_upgrade;
+              proxy_set_header Connection "upgrade";
+            }
+        
+            location ~ /loki/api/.* {
+              proxy_pass       http://read:3100\$$request_uri;
+            }
+          }
+        }
+        EOF
+        /docker-entrypoint.sh nginx -g "daemon off;"
+    ports:
+      - "3100:3100"
+    healthcheck:
+      test: [ "CMD", "service", "nginx", "status" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks:
+      - ryd
+
+  prometheus:
+    image: prom/prometheus:v2.50.1
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - ryd
+
+  # ------------------------------
+  # Microservices
+  # ------------------------------
+  users:
+    image: "rafalciesla/ryd-users:latest"
+    container_name: ryd-users
+    ports:
+      - "8101:8101"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/rent_your_dreams"
+      OTEL_SERVICE_NAME: "users"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      gatewayserver:
+        condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: microservice-eureka-base
+
+  cars:
+    image: "rafalciesla/ryd-cars:latest"
+    container_name: ryd-cars
+    ports:
+      - "8102:8102"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/rent_your_dreams"
+      OTEL_SERVICE_NAME: "cars"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      gatewayserver:
+        condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: microservice-eureka-base
+
+  images:
+    image: "rafalciesla/ryd-images:latest"
+    container_name: ryd-images
+    ports:
+      - "8103:8103"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/rent_your_dreams"
+      OTEL_SERVICE_NAME: "images"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      gatewayserver:
+        condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: microservice-eureka-base
+
+networks:
+  ryd:
+    driver: "bridge"
+
+volumes:
+  pgdata:
+    external: false

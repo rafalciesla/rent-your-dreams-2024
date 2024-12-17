@@ -42,10 +42,17 @@ management:
   info:
     env:
       enabled: true # enable environment info
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 endpoints:
   shutdown:
     enabled: true
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 
 eureka:
   instance:

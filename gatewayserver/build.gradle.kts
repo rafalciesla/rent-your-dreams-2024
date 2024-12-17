@@ -10,6 +10,7 @@ group = "pl.ciesla.ryd"
 version = "0.0.2-SNAPSHOT"
 val imagePrefix = "rafalciesla"
 val dockerImageName = "ryd-gatewayserver"
+val openTelemetryVersion = "1.33.5"
 
 jib {
 	from {
@@ -51,13 +52,18 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 
 	// Spring Core / Web
-	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
 	// Spring Cloud
 	implementation("org.springframework.cloud:spring-cloud-starter-config")
 	implementation("org.springframework.cloud:spring-cloud-starter-gateway")
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
+
+	// Observability
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
+	implementation("io.micrometer:micrometer-registry-prometheus")
+	runtimeOnly("io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryVersion}")
 
 	// Resiliency
 	implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j")
@@ -66,9 +72,6 @@ dependencies {
 	// Code generation
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
-
-	// Monitoring
-	implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
 
 	// Tests
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

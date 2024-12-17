@@ -10,6 +10,7 @@ group = "pl.ciesla"
 version = "0.0.2-SNAPSHOT"
 val imagePrefix = "rafalciesla"
 val dockerImageName = "ryd-configserver"
+val openTelemetryVersion = "1.33.5"
 
 jib {
     from {
@@ -39,11 +40,15 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // Spring Core / Web
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     // Spring Cloud
     implementation("org.springframework.cloud:spring-cloud-config-server")
+
+	// Observability
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("io.micrometer:micrometer-registry-prometheus")
+	runtimeOnly("io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryVersion}")
 
 }
 
