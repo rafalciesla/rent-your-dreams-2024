@@ -50,6 +50,7 @@ dependencies {
 
 	// Kotlin
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
 
 	// Spring Core / Web
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -58,6 +59,11 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-config")
 	implementation("org.springframework.cloud:spring-cloud-starter-gateway")
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
+
+	// Security
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.security:spring-security-oauth2-resource-server")
+	implementation("org.springframework.security:spring-security-oauth2-jose")
 
 	// Observability
 	implementation("org.springframework.boot:spring-boot-starter-actuator")

@@ -94,6 +94,22 @@ services:
       - ryd
 
   # ------------------------------
+  # Auth
+  # ------------------------------
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.7
+    container_name: keycloak
+    command:
+      - start-dev
+    ports:
+      - "7080:8080"
+    extends:
+      file: docker-private-config.yml
+      service: keycloak-authorization
+    networks:
+      - ryd
+
+  # ------------------------------
   # API Gateway
   # ------------------------------
   gatewayserver:
@@ -104,6 +120,7 @@ services:
     environment:
       SPRING_DATA_REDIS_HOST: "redis"
       OTEL_SERVICE_NAME: "gatewayserver"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: "http://keycloak:8080/realms/master/protocol/openid-connect/certs"
     healthcheck:
       test: "wget -T5 -qO- localhost:8072/actuator/health/readiness | grep UP || exit 1"
       interval: 5s
@@ -350,8 +367,6 @@ services:
   users:
     image: "rafalciesla/ryd-users:latest"
     container_name: ryd-users
-    ports:
-      - "8101:8101"
     environment:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/rent_your_dreams"
       OTEL_SERVICE_NAME: "users"
@@ -367,8 +382,6 @@ services:
   cars:
     image: "rafalciesla/ryd-cars:latest"
     container_name: ryd-cars
-    ports:
-      - "8102:8102"
     environment:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/rent_your_dreams"
       OTEL_SERVICE_NAME: "cars"
@@ -384,8 +397,6 @@ services:
   images:
     image: "rafalciesla/ryd-images:latest"
     container_name: ryd-images
-    ports:
-      - "8103:8103"
     environment:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/rent_your_dreams"
       OTEL_SERVICE_NAME: "images"
