@@ -15,7 +15,7 @@ import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
-import pl.ciesla.ryd.gatewayserver.controller.FallbackController
+import pl.ciesla.ryd.gatewayserver.web.controller.FallbackController
 import reactor.core.publisher.Mono
 import java.time.Duration
 import java.time.LocalDateTime
