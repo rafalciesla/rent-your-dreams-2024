@@ -6,3 +6,14 @@ spring:
   cloud:
     function:
       definition: email|sms
+    stream:
+      bindings:
+        email-in-0:
+          destination: send-communication
+          group: ${spring.application.name}
+  rabbitmq:
+    host: localhost
+    port: 5672
+    password: guest
+    username: guest
+    connection-timeout: 10s
