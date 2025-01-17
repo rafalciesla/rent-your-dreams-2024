@@ -38,7 +38,7 @@ management:
         include: "*"
   endpoint:
     shutdown:
-      enabled: true # an actuator url allowing to shut down service gracefully and deregister itself from eureka
+      access: unrestricted
   info:
     env:
       enabled: true # enable environment info

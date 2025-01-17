@@ -2,7 +2,6 @@ package pl.ciesla.ryd.cars.model
 
 import jakarta.persistence.*
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
-import pl.ciesla.ryd.lib.model.RYDEntity
 import java.util.*
 
 @Table(name = "images")
@@ -18,4 +17,4 @@ class Image(
     var filePath: String,
     var fileDownloadId: UUID
 
-) : RYDEntity()
+)

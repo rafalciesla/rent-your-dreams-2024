@@ -4,7 +4,7 @@ import jakarta.persistence.*
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import pl.ciesla.ryd.lib.common.cars.EngineType
 import pl.ciesla.ryd.lib.common.cars.TransmissionType
-import pl.ciesla.ryd.lib.model.RYDEntity
+import pl.ciesla.ryd.lib.model.Audit
 import java.math.BigDecimal
 
 @Table(name = "cars")
@@ -33,4 +33,6 @@ class Car(
     var pricePerDay: BigDecimal,
     var description: String,
 
-) : RYDEntity()
+    @Embedded
+    var audit: Audit = Audit()
+)

@@ -99,6 +99,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.0.7
     container_name: keycloak
+    restart: always
     command:
       - start-dev
     ports:
@@ -106,6 +107,8 @@ services:
     extends:
       file: docker-private-config.yml
       service: keycloak-authorization
+    volumes:
+      - /home/revayne/keycloak:/opt/keycloak/data/h2
     networks:
       - ryd
 

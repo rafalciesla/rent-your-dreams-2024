@@ -1,30 +1,48 @@
 plugins {
-    kotlin("jvm") version "2.1.0"
-    kotlin("plugin.spring") version "2.1.0"
-    id("org.springframework.boot") version "3.3.6"
-    id("io.spring.dependency-management") version "1.1.6"
-    id("com.google.cloud.tools.jib") version "3.4.4"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.spring)
+
+    alias(libs.plugins.springBoot)
+    alias(libs.plugins.springBoot.dependencyManagement)
+    alias(libs.plugins.jib)
 }
 
-group = "pl.ciesla.ryd"
-version = "0.0.2-SNAPSHOT"
-val imagePrefix = "rafalciesla"
+val dockerImagePrefix = "rafalciesla"
 val dockerImageName = "ryd-eurekaserver"
-val openTelemetryVersion = "1.33.5"
 
 jib {
     from {
         image = "eclipse-temurin:21.0.5_11-jre-alpine"
     }
     to {
-        image = "${imagePrefix}/${dockerImageName}"
+        image = "${dockerImagePrefix}/${dockerImageName}"
         tags = setOf("$version", "latest")
     }
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+dependencies {
+
+    // Kotlin
+    implementation(libs.bundles.kotlin)
+
+    // Spring Cloud
+    implementation(libs.spring.cloud.configClient)
+    implementation(libs.spring.cloud.eurekaServer)
+
+    // Observability
+    implementation(libs.bundles.observability)
+    runtimeOnly(libs.open.telemetry)
+
+    // Tests
+    testImplementation(libs.bundles.test)
+    testRuntimeOnly(libs.junit.launcher)
+
+}
+
+kotlin {
+    jvmToolchain(JavaLanguageVersion.of(libs.versions.java.get()).asInt())
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
     }
 }
 
@@ -32,38 +50,9 @@ repositories {
     mavenCentral()
 }
 
-extra["springCloudVersion"] = "2023.0.3"
-
-dependencies {
-
-    // Kotlin
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-
-    // Spring Cloud
-    implementation("org.springframework.cloud:spring-cloud-starter-config")
-    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-server")
-
-    // Observability
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("io.micrometer:micrometer-registry-prometheus")
-    runtimeOnly("io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryVersion}")
-
-    // Tests
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-}
-
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
-    }
-}
-
-kotlin {
-    compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${libs.versions.spring.cloud.get()}")
     }
 }
 
