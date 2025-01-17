@@ -6,5 +6,4 @@ data class UserDto(
     var email: String,
     var password: String,
     var rentedCars: List<CarDto>
-
 )

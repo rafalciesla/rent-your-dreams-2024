@@ -11,9 +11,10 @@ import pl.ciesla.ryd.lib.annotation.RydBean
     includeFilters = [ComponentScan.Filter(
         type = FilterType.ANNOTATION,
         classes = [RydBean::class]
-    )])
+    )]
+)
 class UsersApplication
 
 fun main(args: Array<String>) {
-    runApplication<pl.ciesla.ryd.users.UsersApplication>(*args)
+    runApplication<UsersApplication>(*args)
 }

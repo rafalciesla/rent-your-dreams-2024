@@ -1,4 +1,4 @@
-package pl.ciesla.ryd.users.core.domain.model;
+package pl.ciesla.ryd.users.core.domain.model
 
 class User(
     var id: Long? = null,
