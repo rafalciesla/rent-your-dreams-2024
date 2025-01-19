@@ -2,20 +2,32 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
-    kotlin("jvm") version "2.1.0"
-    kotlin("plugin.spring") version "2.1.0"
-    kotlin("plugin.jpa") version "2.1.0"
-    kotlin("kapt")
-    id("org.springframework.boot") version "3.3.6"
-    id("io.spring.dependency-management") version "1.1.6"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.spring)
+    alias(libs.plugins.kotlin.noarg)
+    alias(libs.plugins.kotlin.jpa)
+
+    alias(libs.plugins.springBoot)
+    alias(libs.plugins.springBoot.dependencyManagement)
 }
 
-group = "pl.ciesla.ryd"
-version = "0.0.2-SNAPSHOT"
+dependencies {
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+    // Kotlin
+    implementation(libs.bundles.kotlin)
+
+    // Spring Core / Web
+    implementation(libs.bundles.spring.web)
+
+    // DB
+    implementation(libs.spring.data)
+
+}
+
+kotlin {
+    jvmToolchain(JavaLanguageVersion.of(libs.versions.java.get()).asInt())
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
     }
 }
 
@@ -23,38 +35,10 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-
-    // Kotlin
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-
-    // Spring Core / Web
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-web")
-
-    // Observability
-    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
-
-    // DB
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-
-    // Code generation
-    kapt("org.mapstruct:mapstruct-processor:1.6.2")
-    implementation("org.mapstruct:mapstruct:1.6.2")
-
-}
-
-kotlin {
-    compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
-    }
-}
-
-allOpen {
+noArg {
     annotation("jakarta.persistence.Entity")
-    annotation("jakarta.persistence.MappedSuperclass")
     annotation("jakarta.persistence.Embeddable")
+    annotation("jakarta.persistence.MappedSuperclass")
 }
 
 tasks.getByName<BootJar>("bootJar") {

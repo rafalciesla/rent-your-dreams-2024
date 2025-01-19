@@ -1,16 +1,52 @@
 plugins {
-	kotlin("jvm") version "2.1.0"
-	kotlin("plugin.spring") version "2.1.0"
-	id("org.springframework.boot") version "3.4.1"
-	id("io.spring.dependency-management") version "1.1.7"
+	alias(libs.plugins.kotlin.jvm)
+	alias(libs.plugins.kotlin.spring)
+
+	alias(libs.plugins.springBoot)
+	alias(libs.plugins.springBoot.dependencyManagement)
+	alias(libs.plugins.jib)
 }
 
-group = "pl.ciesla.ryd"
-version = "0.0.1-SNAPSHOT"
+val dockerImagePrefix = "rafalciesla"
+val dockerImageName = "ryd-notifications"
 
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+jib {
+	from {
+		image = "eclipse-temurin:21.0.5_11-jre-alpine"
+	}
+	to {
+		image = "${dockerImagePrefix}/${dockerImageName}"
+		tags = setOf("$version", "latest")
+	}
+}
+
+dependencies {
+
+	// Kotlin
+	implementation(libs.bundles.kotlin)
+
+	// Spring Core / Web
+	implementation(libs.bundles.spring.web)
+	developmentOnly(libs.spring.devtools)
+
+	// Spring Cloud
+	implementation(libs.spring.cloud.stream)
+	implementation(libs.spring.cloud.stream.rabbit)
+
+	// Observability
+	implementation(libs.bundles.observability)
+	runtimeOnly(libs.open.telemetry)
+
+	// Tests
+	testImplementation(libs.bundles.test)
+	testRuntimeOnly(libs.junit.launcher)
+
+}
+
+kotlin {
+	jvmToolchain(JavaLanguageVersion.of(libs.versions.java.get()).asInt())
+	compilerOptions {
+		freeCompilerArgs.addAll("-Xjsr305=strict")
 	}
 }
 
@@ -18,41 +54,9 @@ repositories {
 	mavenCentral()
 }
 
-extra["springCloudVersion"] = "2024.0.0"
-
-dependencies {
-
-	// Kotlin
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
-
-	// Spring Core / Web
-	implementation("org.springframework.boot:spring-boot-starter")
-
-	// Spring Cloud
-	implementation("org.springframework.cloud:spring-cloud-stream")
-	implementation("org.springframework.cloud:spring-cloud-stream-binder-rabbit")
-
-	// Observability
-	implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
-
-	// Tests
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-	testImplementation("org.springframework.cloud:spring-cloud-stream-test-binder")
-
-}
-
 dependencyManagement {
 	imports {
-		mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
-	}
-}
-
-kotlin {
-	compilerOptions {
-		freeCompilerArgs.addAll("-Xjsr305=strict")
+		mavenBom("org.springframework.cloud:spring-cloud-dependencies:${libs.versions.spring.cloud.get()}")
 	}
 }
 

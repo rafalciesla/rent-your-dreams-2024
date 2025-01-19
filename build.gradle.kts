@@ -1,9 +1,11 @@
 plugins {
-    kotlin("jvm") version "2.1.0"
+    alias(libs.plugins.kotlin.jvm)
 }
 
-group = "pl.ciesla.ryd"
-version = "0.0.2-SNAPSHOT"
+allprojects {
+    group = "pl.ciesla.ryd"
+    version = "0.0.4-SNAPSHOT"
+}
 
 repositories {
     mavenCentral()

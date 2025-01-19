@@ -1,39 +1,64 @@
 plugins {
-    kotlin("jvm") version "2.1.0"
-    kotlin("plugin.spring") version "2.1.0"
-    kotlin("plugin.jpa") version "2.1.0"
-    kotlin("plugin.noarg") version "2.1.0"
-    kotlin("kapt")
-    id("org.springframework.boot") version "3.3.6"
-    id("io.spring.dependency-management") version "1.1.6"
-    id("com.google.cloud.tools.jib") version "3.4.4"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.spring)
+    alias(libs.plugins.kotlin.noarg)
+    alias(libs.plugins.kotlin.jpa)
+
+    alias(libs.plugins.springBoot)
+    alias(libs.plugins.springBoot.dependencyManagement)
+    alias(libs.plugins.jib)
 }
 
-group = "pl.ciesla.ryd"
-version = "0.0.2-SNAPSHOT"
-val imagePrefix = "rafalciesla"
+val dockerImagePrefix = "rafalciesla"
 val dockerImageName = "ryd-users"
-val openTelemetryVersion = "1.33.5"
 
 jib {
     from {
         image = "eclipse-temurin:21.0.5_11-jre-alpine"
     }
     to {
-        image = "${imagePrefix}/${dockerImageName}"
+        image = "${dockerImagePrefix}/${dockerImageName}"
         tags = setOf("$version", "latest")
     }
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+dependencies {
+
+    // Kotlin
+    implementation(libs.bundles.kotlin)
+
+    // Spring Core / Web
+    implementation(libs.bundles.spring.web)
+    developmentOnly(libs.spring.devtools)
+
+    // Spring Cloud
+    implementation(libs.bundles.spring.cloud)
+
+    // Observability
+    implementation(libs.bundles.observability)
+    runtimeOnly(libs.open.telemetry)
+
+    // DB
+    implementation(libs.bundles.postgres.db)
+    runtimeOnly(libs.postgres.runtime)
+
+    // Code generation
+    compileOnly(libs.lombok.compile)
+    annotationProcessor(libs.lombok.annotation)
+
+    // Internal libraries
+    implementation(project(":lib"))
+
+    // Tests
+    testImplementation(libs.bundles.test)
+    testRuntimeOnly(libs.junit.launcher)
+
 }
 
-configurations {
-    compileOnly {
-        extendsFrom(configurations.annotationProcessor.get())
+kotlin {
+    jvmToolchain(JavaLanguageVersion.of(libs.versions.java.get()).asInt())
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
     }
 }
 
@@ -41,62 +66,9 @@ repositories {
     mavenCentral()
 }
 
-extra["springCloudVersion"] = "2023.0.3"
-
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
-    }
-}
-
-dependencies {
-
-    // Kotlin
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-
-    // Spring Core / Web
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
-
-    // Spring Cloud
-    implementation("org.springframework.cloud:spring-cloud-starter-config")
-    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
-    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
-    implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
-
-    // Observability
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
-    implementation("io.micrometer:micrometer-registry-prometheus")
-    runtimeOnly("io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryVersion}")
-
-    // DB
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.flywaydb:flyway-core")
-    implementation("org.flywaydb:flyway-database-postgresql")
-    runtimeOnly("org.postgresql:postgresql")
-
-    // Code generation
-    kapt("org.mapstruct:mapstruct-processor:1.6.2")
-    implementation("org.mapstruct:mapstruct:1.6.2")
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-
-    // Internal libraries
-    implementation(project(":lib"))
-
-    // Tests
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-}
-
-kotlin {
-    compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${libs.versions.spring.cloud.get()}")
     }
 }
 
